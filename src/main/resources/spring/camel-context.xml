@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring       https://camel.apache.org/schema/spring/camel-spring-2.21.5.xsd">
+	<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+		<dataFormats>
+			<json id="jack" library="Jackson" />
+		</dataFormats>
+		<restConfiguration bindingMode="json" component="netty-http" contextPath="/rs" port="8310" />
+		<rest id="rest-api-activacion-usuarios" path="/api">
+			<post consumes="application/json" id="/api" produces="application/json" uri="/planeacion/activacion/usuarios/v1.0">
+				<to uri="direct:activacion-usuarios-route" />
+			</post>
+		</rest>
+		<route id="simple-route">
+			<from id="_from-activacion-usuarios-route" uri="direct:activacion-usuarios-route" />
+			<log id="_log-inicio-ruta-activacion-usuarios" message="///////Inicio Ruta Activacion Usuarios//////" />
+			<removeHeaders id="_removeHeadersTodos" pattern="*"/>
+            <setHeader headerName="Content-Type" id="_setHeaderContentTypeCU">
+                <constant>application/json</constant>
+            </setHeader>
+            <setHeader headerName="Accept" id="_setHeaderAcceptCU">
+                <constant>application/json</constant>
+            </setHeader>
+            <setHeader headerName="CamelHttpMethod" id="_setHeaderCamelHttpMethodCC">
+                <constant>POST</constant>
+            </setHeader>
+            <marshal id="_marshalRequest">
+                <custom ref="jack"/>
+            </marshal>
+			<toD id="_toHttpAU" uri="http://{{url.activacion.usuarios}}"/>
+		</route>
+	</camelContext>
+</beans>
